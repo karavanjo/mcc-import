@@ -3,8 +3,6 @@ import csv
 
 from pymongo import MongoClient
 
-from mcc_import.utils import bulk_observations_insert
-
 logger = logging.getLogger("mcc_import")
 
 
@@ -30,8 +28,12 @@ def import_stations(uri: str, cert: str):
         stations = []
 
         for row in csv_reader:
+            short_code = row[0]
+            full_code = codes_info[short_code]
+
             station = {
-                "code": row[0],
+                "code": full_code,
+                "short_code": row[0],
                 "name": row[1],
                 "river": row[8],
                 "type": row[9],
@@ -42,9 +44,20 @@ def import_stations(uri: str, cert: str):
             }
             stations.append(station)
 
-            bulk_observations_insert(stations, c_stations)
-
-        bulk_observations_insert(stations, c_stations, all=True)
+        c_stations.insert_many(stations)
+        logger.info(f"{len(stations)} stations imported")
+        stations.clear()
 
     doc_count = c_stations.count_documents({})
     logger.info(f"Stations import process is finished. {doc_count} stations were imported.")
+
+
+def get_full_codes_from_file():
+    codes_info = {}
+
+    with open("data/stations/wykaz_stacji.csv", encoding="windows-1250") as csv_file:
+        csv_reader = csv.reader(csv_file, dialect="excel")
+        for row in csv_reader:
+            codes_info[row[2].strip()] = row[0].strip()
+
+    return codes_info

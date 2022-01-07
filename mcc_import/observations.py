@@ -8,8 +8,6 @@ from datetime import datetime
 
 from pymongo import MongoClient
 
-from mcc_import.utils import bulk_observations_insert
-
 logger = logging.getLogger("mcc_import")
 
 
@@ -74,9 +72,10 @@ def import_observations_rows(csv_reader, c_observations, observation_type):
     for row in csv_reader:
         observation = observation_maker(row)
         observations.append(observation)
-        bulk_observations_insert(observations, c_observations)
 
-    bulk_observations_insert(observations, c_observations, all=True)
+    c_observations.insert_many(observations)
+    logger.info(f"{len(observations)} observations imported")
+    observations.clear()
 
 
 def make_climate_observation(row):
