@@ -14,9 +14,12 @@ logger = logging.getLogger("mcc_import")
 
 
 def import_observations(uri: str, cert: str):
-    client = MongoClient(uri,
-                         tls=True,
-                         tlsCertificateKeyFile=cert)
+    if cert:
+        client = MongoClient(uri,
+                             tls=True,
+                             tlsCertificateKeyFile=cert)
+    else:
+        client = MongoClient(uri)
 
     db = client["mcc-climate"]
 

@@ -9,9 +9,14 @@ logger = logging.getLogger("mcc_import")
 
 
 def import_stations(uri: str, cert: str):
-    client = MongoClient(uri,
-                         tls=True,
-                         tlsCertificateKeyFile=cert)
+    codes_info = get_full_codes_from_file()
+
+    if cert:
+        client = MongoClient(uri,
+                             tls=True,
+                             tlsCertificateKeyFile=cert)
+    else:
+        client = MongoClient(uri)
 
     db = client["mcc-climate"]
     c_stations = db["stations"]
